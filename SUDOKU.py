@@ -28,27 +28,28 @@ def empty(ques):
 	for i in range(9):
 		for j in range(9):
 			if(not ques[i][j]):
-				return True
-	return False
+				return [i, j];
+	return None
 
 def solve(ques):
-
-	if not empty(ques):
+	find = empty(ques)
+	if not find:
 		return True
 
-	for i in range(9):
-		for j in range(9):
-			if(not ques[i][j]):
-				for k in range(1,10):
-					if(get_ans(i*49, j*49, k, ques)):
-						ques[i][j] = k
+	else:
+		row, col = find[0],find[1]
 
-					if solve(ques):
-						return True
+	for i in range(1, 10):
+		if get_ans(row*49, col*49, i, ques):
+			ques[row][col] = i
 
-					ques[i][j] = 0
+			if solve(ques):
+				return True
 
-				return False
+			ques[row][col] = 0
+
+	return False
+
 
 
 
@@ -98,6 +99,7 @@ def get_ans(i,j,n, ques):
 	if(check_no(ques)):
 		return True
 	else:
+		ques[i][j] = 0
 		return False
 	
 
@@ -124,6 +126,21 @@ def draw_window(BG, highlight, the_color, pressed, ques):
 				
 	pygame.display.update()
 
+def solve_draw(ques):
+	for i in range(9):
+		for j in range(9):
+			if ques[i][j]!=0:
+				number = NO_FONT.render(str(ques[i][j]), 1, BLACK)
+				WIN.blit(number, (j*49+14, i*49+14))
+
+	pygame.display.update()
+
+def win_draw():
+	WIN.fill(WHITE)
+	win = NO_FONT.render("YAY!", 1, RED)
+	WIN.blit(win, (0, 0))
+	pygame.display.update()
+
 def main():
 	# highlight = pygame.Rect(0,0,100,100)
 	run = True
@@ -133,17 +150,23 @@ def main():
 	the_color = False
 	pressed = 0
 	ques = get_ques()
-	# arr = ques
-	# if(solve(arr)):
+	arr = get_ques()
+	solve(arr)
 
 	i=0
 	j=0
 	while(run):
 		clock.tick(FPS)
-		# if(arr==ques):
-		# 		yay = NO_FONT.render("YOU WON", 1, BLACK)
-		# 		WIN.blit(yay, (0,0))
-		# 		run = False
+
+		# if(not empty(ques)):
+		# 	wins = NO_FONT.render("YOU WON", 1, BLACK)
+		# 	WIN.blit(wins, (0,0))
+		# 	pygame.time.delay(20)
+		# 	run = False
+
+		if(arr==ques):
+			win_draw()
+
 		for event in pygame.event.get():
 
 			if event.type == pygame.QUIT:
@@ -153,12 +176,10 @@ def main():
 
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_SPACE:
-					if(solve(ques)):
-						pygame.time.delay(20)
-					else:
-						ques = get_ques()
-					# pygame.time.delay(2000)
-					# run = False
+					solve(ques)
+					solve_draw(ques)
+					pygame.time.delay(3000)
+					run  = False
 				if event.key == pygame.K_LEFT and highlight.x>50:
 					HLX-=49
 				if event.key == pygame.K_RIGHT and highlight.x<352:
